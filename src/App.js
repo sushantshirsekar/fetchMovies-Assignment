@@ -12,7 +12,7 @@ function App() {
     setLoading(true);
     try {
       setError(null);
-      const response = await fetch("https://swapi.dev/api/film");
+      const response = await fetch("https://swapi.dev/api/films");
 
       if (!response.ok) {
         throw new Error("Something went wrong...retrying");
