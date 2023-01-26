@@ -13,51 +13,69 @@ function App() {
     setLoading(true);
     try {
       setError(null);
-      const response = await fetch("https://swapi.dev/api/films");
+      const response = await fetch(
+        "https://movie-fetch-default-rtdb.firebaseio.com/movies.json"
+      );
 
       if (!response.ok) {
         throw new Error("Something went wrong...retrying");
       }
       const data = await response.json();
+      console.log(data);
+      let movieData = [];
 
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
+      for (const key in data) {
+        movieData.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate,
+        });
+      }
+      setMovies(movieData);
     } catch (error) {
-      
       setError(error.message);
     }
     setLoading(false);
   }, []);
 
+  const addMovieHandler = async (movie) => {
+    const res = await fetch(
+      "https://movie-fetch-default-rtdb.firebaseio.com/movies.json",
+      {
+        method: "POST",
+        body: JSON.stringify(movie),
+        headers: {
+          "Content-type": "application/json",
+        },
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+    fetchMovies();
+  };
+
+  
+
   useEffect(() => {
-      fetchMovies();
+    fetchMovies();
   }, [fetchMovies]);
 
   const clear = (event) => {
     setError(event.target.parentNode.remove());
   };
 
-  const addMovieHandler = (movie) => {
-    console.log(movie);
-  }
-
   return (
     <React.Fragment>
       <section>
-        <AddMovie onAddMovie = {addMovieHandler}/>
+        <AddMovie onAddMovie={addMovieHandler} />
       </section>
       <section>
         <button onClick={fetchMovies}>Fetch Movies</button>
       </section>
       <section>
-        {!loading && <MoviesList movies={movies} />}
+        {(!loading && <MoviesList movies={movies} fetchMovieHandler = {fetchMovies}> </MoviesList>)}
+
         {!loading && movies.length === 0 && <p>Found no Movies</p>}
         {!loading && error && <p>{error}</p>}
         {loading && <p>Loading...</p>}
